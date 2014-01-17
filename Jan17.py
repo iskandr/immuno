@@ -22,7 +22,9 @@ fns = [amino_acid.hydropathy,
        amino_acid.prct_exposed_residues,
        amino_acid.hydrophilicity, 
        amino_acid.accessible_surface_area,
-       amino_acid.local_flexibility]
+       amino_acid.local_flexibility,
+       amino_acid.accessible_surface_area_folded,
+       amino_acid.refractivity]
 
 print "All features, all positions"
 X2 = data.transform(X, fns)
@@ -32,8 +34,8 @@ print "Mean per feature"
 X3 = data.transform(X, fns, mean = True)
 print np.mean(sklearn.cross_validation.cross_val_score(clf, X3, Y, cv = 10))
 
-print "Positions 3,4,7"
-X4 = data.transform(X, fns, positions = (3,4,7))
+print "Positions 4,6,8,9"
+X4 = data.transform(X, fns, positions = (4,6,8,9))
 print np.mean(sklearn.cross_validation.cross_val_score(clf, X4, Y, cv = 10))
 
 
