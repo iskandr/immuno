@@ -68,9 +68,9 @@ def toxin_features(peptides, toxins = None, length = 3, reverse = False):
       substr = p[pos:pos+length]
       for j, substr_set in enumerate(substr_sets):
         if substr in substr_set:
-          X[i,j] = 1
+          X[i,j] += 1
   print "Data shape", X.shape
-  print "Average non-zero per vector:", np.mean(X) * len(X)
+  print "Average non-zero per vector:", np.mean(X!=0) * len(X)
   return X
   
                 
