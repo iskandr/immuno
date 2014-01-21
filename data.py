@@ -48,11 +48,18 @@ def transform(X, fns, positions = None, mean = False, pairwise_ratios = False):
   return X2
 
 import toxin 
-def load_toxin_features(imm_file = IMM_FILE, non_file = NON_FILE, substring_length=3):
+def load_toxin_features(imm_file = IMM_FILE, non_file = NON_FILE, substring_length=3, positional=False):
   imm = load_lines(imm_file)
-  imm_toxin_features = toxin.toxin_features(imm, length=substring_length)
   non = load_lines(non_file)
-  non_toxin_features = toxin.toxin_features(non, length=substring_length)
+  
+  if positional:
+    imm_toxin_features = toxin.positional_toxin_features(imm, length=substring_length)
+    non_toxin_features = toxin.positional_toxin_features(non, length=substring_length)
+  
+  else:
+    imm_toxin_features = toxin.toxin_features(imm, length=substring_length)
+    non_toxin_features = toxin.toxin_features(non, length=substring_length)
+  
   X = np.vstack([imm_toxin_features, non_toxin_features])
   Y = np.ones(len(X), dtype='bool')
   Y[len(imm):] = 0

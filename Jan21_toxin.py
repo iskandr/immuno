@@ -18,7 +18,7 @@ def run_classifiers(X,Y):
     print "SVM C =", c
     print np.mean(sklearn.cross_validation.cross_val_score(svm, X, Y, cv = 10))
  
-  n_classifiers = 1000
+  n_classifiers = 2000
   rf = sklearn.ensemble.RandomForestClassifier(n_classifiers)
   print "Random Forest"
   print np.mean(sklearn.cross_validation.cross_val_score(rf, X, Y, cv = 10))
@@ -50,5 +50,11 @@ run_classifiers(X_small,Y)
 print 
 print "PCA n = 100"
 pca = sklearn.decomposition.PCA(n_components=100)
+X_small = pca.fit_transform(X)
+run_classifiers(X_small,Y)
+
+print 
+print "PCA n = 100"
+pca = sklearn.decomposition.PCA(n_components=200)
 X_small = pca.fit_transform(X)
 run_classifiers(X_small,Y)

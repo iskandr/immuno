@@ -51,6 +51,10 @@ def count_toxin_substring_matches(peptides, toxins = None, length = 3):
 
 import numpy as np 
 def toxin_features(peptides, toxins = None, length = 3, reverse = False):
+  """
+  Unordered binary features indicating whether a substring of a peptide 
+  occurs *anywhere* in the sequence of some known toxin
+  """
   if toxins is None:
     toxins = read_toxin_list()
   substr_sets = []
@@ -68,10 +72,36 @@ def toxin_features(peptides, toxins = None, length = 3, reverse = False):
       substr = p[pos:pos+length]
       for j, substr_set in enumerate(substr_sets):
         if substr in substr_set:
-          X[i,j] += 1
+          X[i,j] = 1
   print "Data shape", X.shape
-  print "Average non-zero per vector:", np.mean(X!=0) * len(X)
+  print "Average non-zero per vector:", np.mean(X!=0) * X.shape[1]
   return X
   
                 
+def positional_toxin_features(peptides, toxins = None, length = 3, reverse = True):
+  """
+  For each substring of the peptide, count how many toxins this occurs in
+  """
+  if toxins is None:
+    toxins = read_toxin_list()
+  substr_sets = []
+  for t in toxins:
+    toxin_substrings = set([])
+    for i in xrange(0, len(t) - length):
+      substr = t[i : i+length]
+      toxin_substrings.add(substr)
+      if reverse:
+        toxin_substrings.add(substr[::-1])
+    substr_sets.append(toxin_substrings)
+
+  X = np.zeros((len(peptides), 9-length)).astype('int')
+  for i, p in enumerate(peptides):
+    for pos in xrange(0, 9 - length):
+      substr = p[pos:pos+length]
+      for substr_set in substr_sets:
+        if substr in substr_set:
+          X[i,pos] += 1
+  print "Data shape", X.shape
+  print "Average:", np.mean(X)
+  return X
     
