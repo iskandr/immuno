@@ -20,7 +20,7 @@ def load_dataset(imm_file = 'IMMA2_imm.txt', non_file='IMMA2_non.txt'):
   Y[len(imm):] = 0
   return X, Y
 
-def transform(X, fns, positions = None, mean = False):
+def transform(X, fns, positions = None, mean = False, pairwise_ratios = False):
   X2 = []
   for x in X:
     row = []
@@ -32,7 +32,15 @@ def transform(X, fns, positions = None, mean = False):
         row.append(np.mean(row_entries))
       else:
         row.extend(row_entries)
+      if pairwise_ratios:
+	for i, y in enumerate(row_entries):
+	  for j, z in enumerate(row_entries):
+	    if i < j:
+              if z == 0:
+	        ratio = 0
+              else:
+                ratio = y / z
+	      row.append(ratio)
     X2.append(row)
   X2 = np.array(X2)
   return X2
-  

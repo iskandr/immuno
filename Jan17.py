@@ -8,7 +8,7 @@ import sklearn
 import sklearn.cross_validation 
 import sklearn.ensemble
 
-n_classifiers = 1000
+n_classifiers = 5000
 
 clf = sklearn.ensemble.RandomForestClassifier(n_classifiers)
 
