@@ -2,7 +2,7 @@ import numpy as np
 import data 
 import amino_acid
 
-X,Y = data.load_dataset()
+X,Y = data.load_dataset(data.IMMA2_IMM_FILE, data.IMMA2_NON_FILE)
 
 import sklearn
 import sklearn.cross_validation 

@@ -11,12 +11,12 @@ def letter_to_index(x):
   """
   assert len(x) == 1
   x = x.upper()
-  assert x in _letters
+  assert x in _letters, x
   return _letters.index(x)
 
  
 def peptide_to_indices(xs):
-  return [letter_to_index(x) for x in xs]
+  return [letter_to_index(x) for x in xs if x != 'X' and x != 'U' ]
 
 def letter_to_short_name(x):
   return _short_names[letter_to_index(x)]
