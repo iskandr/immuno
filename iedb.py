@@ -28,8 +28,20 @@ def load_csv(filename = 'tcell_compact.csv'):
   mask = class_1_mhc & human & has_epitope_seq
   print "Class I MHC humans w/ epitope sequences", mask.sum()
   
-  df_filtered = df[mask]
+  df = df[mask]
   
-  return df_filtered
+  imm_mask = df['Qualitative Measure'] == 'Positive' 
+  imm_mask |= df['Qualitative Measure'] == 'Positive-High'
+  imm = df['Epitope Linear Sequence'][imm_mask]
+  print "# immunogenic sequences", len(imm)
+  print "sequence length"
+  print imm.str.len().describe()
   
+  non_mask = df['Qualitative Measure'] == 'Negative'
+  non = df['Epitope Linear Sequence'][non_mask]
+  print "# non-immunogenic sequences", len(non)
+  print "sequence length", non.str.len().describe()
+  
+  
+  return imm, non 
   
