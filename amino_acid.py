@@ -9,7 +9,7 @@ def letter_to_index(x):
   """
   Convert from an amino acid's letter code to its position index
   """
-  assert len(x) == 1
+  # assert len(x) == 1
   x = x.upper()
   assert x in _letters, x
   return _letters.index(x)
