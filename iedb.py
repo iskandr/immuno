@@ -43,7 +43,6 @@ def load_csv(filename = 'tcell_compact.csv',
   
   imm_mask = df['Qualitative Measure'].str.startswith('Positive').astype('bool')
   
-  #imm_mask |= df['Qualitative Measure'] == 'Positive-High'
   imm = df['Epitope Linear Sequence'][imm_mask]
   print "# immunogenic sequences", len(imm)
   print "sequence length"
@@ -88,10 +87,23 @@ def peptide_sequences_to_histogram_vectors(peptides):
 def load_dataset(filename = 'tcell_compact.csv', 
                  assay_group=None, 
                  unique_sequences = True, 
-                 filter_noisy_labels = True):
+                 filter_noisy_labels = True, 
+                 balance_classes = True):
   imm, non = load_csv(filename, assay_group, unique_sequences, filter_noisy_labels)
   X_imm = peptide_sequences_to_histogram_vectors(imm)
   X_non = peptide_sequences_to_histogram_vectors(non)
+  print "IMM shape", X_imm.shape
+  print "NON shape", X_non.shape
+  if balance_classes:
+    n_imm = len(X_imm)
+    n_non = len(X_non)
+    if n_imm < n_non:
+      n_repeat = int(np.floor(n_non / float(n_imm)))
+      X_imms = [X_imm]  * n_repeat 
+      X_imm = np.vstack(X_imms)
+    else:
+      n_repeat = int(np.floor(n_imm / float(n_non)))
+      
   X = np.vstack([X_imm, X_non])
   Y = np.ones(len(X), dtype='bool')
   Y[len(X_imm):] = 0
