@@ -1,20 +1,20 @@
 import numpy as np 
 import data 
 import amino_acid
-import iedb
+import imma, iedb
 
-X,Y = iedb.load_dataset()
-
+X,Y = imma.load_dataset()
+#X,Y = iedb.load_dataset_vectorizer()
 import sklearn
 import sklearn.cross_validation 
 import sklearn.ensemble
 
 n_classifiers = 100
 
-clf = sklearn.ensemble.RandomForestClassifier(n_classifiers)
-
+#clf = sklearn.ensemble.GradientBoostingClassifier(n_estimators = n_classifiers)
+clf = sklearn.ensemble.RandomForestClassifier(n_estimators = n_classifiers)
 print "Amino acid histogram vectors"
-print np.mean(sklearn.cross_validation.cross_val_score(clf, X, Y, cv = 10, scoring = 'roc_auc'))
+print np.mean(sklearn.cross_validation.cross_val_score(clf, X.todense(), Y, cv = 10, scoring='roc_auc'))
 
 fns = [amino_acid.hydropathy, 
        amino_acid.volume, 

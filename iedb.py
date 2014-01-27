@@ -5,7 +5,7 @@ def load_csv(filename = 'tcell_compact.csv',
              assay_group=None, 
              unique_sequences = True, 
              filter_noisy_labels = True):
-  df = pd.read_csv(filename)
+  df = pd.read_csv(filename, skipinitialspace=True)
   mhc = df['MHC Allele Name']
 
   # 
@@ -74,14 +74,32 @@ def load_csv(filename = 'tcell_compact.csv',
       return imm, non 
   
 import numpy as np 
+import amino_acid
 from amino_acid import letter_to_index
+
+fns = [amino_acid.hydropathy, 
+       amino_acid.volume, 
+       amino_acid.pK_side_chain,
+       amino_acid.polarity, 
+       amino_acid.prct_exposed_residues,
+       amino_acid.hydrophilicity, 
+       amino_acid.accessible_surface_area,
+       amino_acid.local_flexibility,
+       amino_acid.accessible_surface_area_folded,
+       amino_acid.refractivity
+       ]
+
+
 def peptide_sequences_to_histogram_vectors(peptides):
   n = len(peptides)
-  X = np.zeros((n, 20)).astype('float')
+  X = np.zeros((n, 20 + len(fns))).astype('float')
   for i, peptide in enumerate(peptides):
-    for letter in peptide:
-      X[i, letter_to_index(letter)] += 1
-    X[i, :] /= len(peptide)
+#    for letter in peptide:
+#      X[i, letter_to_index(letter)] += 1
+#    X[i, :] /= len(peptide)
+    for fn in fns:
+	np.mean([fn(aa) for aa in peptide])
+  print X
   return X
   
 def load_dataset(filename = 'tcell_compact.csv', 
@@ -107,5 +125,22 @@ def load_dataset(filename = 'tcell_compact.csv',
   X = np.vstack([X_imm, X_non])
   Y = np.ones(len(X), dtype='bool')
   Y[len(X_imm):] = 0
+  return X, Y
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.preprocessing import normalize
+def load_dataset_vectorizer(filename = 'tcell_compact.csv',
+                 assay_group=None,
+                 unique_sequences = True,
+                 filter_noisy_labels = True,
+		 normalizeRow = True):
+  c = CountVectorizer(analyzer='char', ngram_range=(1,2), dtype=np.float)
+  imm, non = load_csv(filename, assay_group, unique_sequences, filter_noisy_labels)
+  total = list(imm) + list(non)
+  X = c.fit_transform(total)
+  if normalizeRow:
+    X = normalize(X, norm='l1')
+  Y = np.ones(len(total), dtype='bool')
+  Y[len(imm):] = 0
   return X, Y
   
