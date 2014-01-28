@@ -4,7 +4,9 @@ import pandas as pd
 def load_csv(filename = 'tcell_compact.csv', 
              assay_group=None, 
              unique_sequences = True, 
-             filter_noisy_labels = True):
+             filter_noisy_labels = True,
+             human = True, 
+             hla_type1 = True):
   df = pd.read_csv(filename, skipinitialspace=True)
   mhc = df['MHC Allele Name']
 
@@ -15,16 +17,16 @@ def load_csv(filename = 'tcell_compact.csv',
   #  'HLA-Class I,allele undetermined'
   #  or
   #  'Class I,allele undetermined'
-  class_1_mhc = mhc.str.contains('Class I,|HLA-[A-C]([0-9]|\*)', na=False).astype('bool')
+  class_1_mhc_mask = mhc.str.contains('Class I,|HLA-[A-C]([0-9]|\*)', na=False).astype('bool')
   
-  print "Class I MHC Entries", class_1_mhc.sum()
+  print "Class I MHC Entries", class_1_mhc_mask.sum()
   
   # just in case any of the results were from mice or other species, 
   # restrict to humans
-  human = df['Host Organism Name'].str.startswith('Homo sapiens', na=False).astype('bool')
+  human_mask = df['Host Organism Name'].str.startswith('Homo sapiens', na=False).astype('bool')
   
-  print "Human entries", human.sum()
-  print "Human Class I MHCs", (human & class_1_mhc).sum()
+  print "Human entries", human_mask.sum()
+  print "Human Class I MHCs", (human_mask & class_1_mhc_mask).sum()
   
   null_epitope_seq = df['Epitope Linear Sequence'].isnull()
   print "Dropping %d null sequences" % null_epitope_seq.sum()
@@ -33,11 +35,15 @@ def load_csv(filename = 'tcell_compact.csv',
   print "Dropping %d bad sequences" % bad_epitope_seq.sum()
   has_epitope_seq = ~(bad_epitope_seq | null_epitope_seq)
   
-  mask = class_1_mhc & human & has_epitope_seq
-  print "Class I MHC humans w/ epitope sequences", mask.sum()
-  
+  mask = has_epitope_seq
+  if human:
+    mask &= human_mask
+  if hla_type1:
+    mask &= class_1_mhc_mask 
   if assay_group:
     mask &= df['Assay Group'] == assay_group
+  
+  print "Filtered sequences epitope sequences", mask.sum()
   
   df = df[mask]
   
@@ -46,12 +52,12 @@ def load_csv(filename = 'tcell_compact.csv',
   imm = df['Epitope Linear Sequence'][imm_mask]
   print "# immunogenic sequences", len(imm)
   print "sequence length"
-  print imm.str.len().describe()
+  #print imm.str.len().describe()
   
   non_mask = df['Qualitative Measure'] == 'Negative'
   non = df['Epitope Linear Sequence'][non_mask]
   print "# non-immunogenic sequences", len(non)
-  print "sequence length", non.str.len().describe()
+  #print "sequence length", non.str.len().describe()
   
   imm_set = set(imm)
   non_set = set(non)
@@ -90,19 +96,20 @@ fns = [amino_acid.hydropathy,
        ]
 
 
-def peptide_sequences_to_histogram_vectors(peptides):
+def peptide_sequences_to_histogram_vectors(peptides, extra_features = fns):
   n = len(peptides)
   X = np.zeros((n, 20 + len(fns))).astype('float')
   for i, peptide in enumerate(peptides):
-#    for letter in peptide:
-#      X[i, letter_to_index(letter)] += 1
-#    X[i, :] /= len(peptide)
-    for fn in fns:
-	np.mean([fn(aa) for aa in peptide])
+    for letter in peptide:
+      X[i, letter_to_index(letter)] += 1
+    X[i, :] /= len(peptide)
+  for fn_idx, fn in enumerate(fns):
+    X[i, fn_idx] = np.mean([fn(aa) for aa in peptide])
   print X
   return X
-  
-def load_dataset(filename = 'tcell_compact.csv', 
+
+"""
+def load_dataset_old(filename = 'tcell_compact.csv', 
                  assay_group=None, 
                  unique_sequences = True, 
                  filter_noisy_labels = True, 
@@ -126,19 +133,43 @@ def load_dataset(filename = 'tcell_compact.csv',
   Y = np.ones(len(X), dtype='bool')
   Y[len(X_imm):] = 0
   return X, Y
+"""
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import normalize
-def load_dataset_vectorizer(filename = 'tcell_compact.csv',
+def load_dataset(filename = 'tcell_compact.csv',
                  assay_group=None,
                  unique_sequences = True,
                  filter_noisy_labels = True,
-		 normalizeRow = True):
-  c = CountVectorizer(analyzer='char', ngram_range=(1,2), dtype=np.float)
-  imm, non = load_csv(filename, assay_group, unique_sequences, filter_noisy_labels)
+                 human = True, 
+                 hla_type1 = True,
+                 max_ngram = 1, 
+		         normalize_row = True, 
+		         reduced_alphabet = None):
+  imm, non = load_csv(filename, 
+     assay_group, 
+     unique_sequences, 
+     filter_noisy_labels, 
+     human, 
+     hla_type1)
   total = list(imm) + list(non)
-  X = c.fit_transform(total)
-  if normalizeRow:
+  
+  if reduced_alphabet is None:
+    preprocessor = None
+  else:
+    def preprocessor(s):
+      return ''.join([chr(48 + reduced_alphabet[char]) for char in s])
+  
+  c = CountVectorizer(analyzer='char', 
+                      ngram_range=(1,max_ngram),
+                      dtype=np.float, 
+                      preprocessor = preprocessor)
+  
+  
+  # returns a sparse matrix 
+  X = c.fit_transform(total).todense()
+  print "Alphabet", c.get_feature_names()
+  if normalize_row:
     X = normalize(X, norm='l1')
   Y = np.ones(len(total), dtype='bool')
   Y[len(imm):] = 0

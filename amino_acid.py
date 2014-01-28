@@ -5,6 +5,12 @@ _short_names = ["Ala", "Arg", "Asn", "Asp", "Cys", "Glu", "Gln", "Gly", "His",
 _letters = ["A", "R", "N", "D", "C", "E", "Q", "G", "H", "I", "L", "K", 
 		"M", "F", "P", "S", "T", "W", "Y", "V"]
 
+def index_to_short_name(idx):
+  return _short_names[idx]
+  
+def index_to_letter(idx):
+  return _letters[idx]
+
 def letter_to_index(x):
   """
   Convert from an amino acid's letter code to its position index
