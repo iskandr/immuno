@@ -6,7 +6,9 @@ def load_csv(filename = 'tcell_compact.csv',
              unique_sequences = True, 
              filter_noisy_labels = True,
              human = True, 
-             hla_type1 = True):
+             hla_type1 = True,
+             exclude_hla_a2 = False,
+             only_hla_a2 = False):
   df = pd.read_csv(filename, skipinitialspace=True)
   mhc = df['MHC Allele Name']
 
@@ -31,7 +33,7 @@ def load_csv(filename = 'tcell_compact.csv',
   null_epitope_seq = df['Epitope Linear Sequence'].isnull()
   print "Dropping %d null sequences" % null_epitope_seq.sum()
   # if have rare or unknown amino acids, drop the sequence
-  bad_epitope_seq = df['Epitope Linear Sequence'].str.contains('u|x|U|X').astype('bool')
+  bad_epitope_seq = df['Epitope Linear Sequence'].str.contains('u|x|U|X|J|B').astype('bool')
   print "Dropping %d bad sequences" % bad_epitope_seq.sum()
   has_epitope_seq = ~(bad_epitope_seq | null_epitope_seq)
   
@@ -43,6 +45,14 @@ def load_csv(filename = 'tcell_compact.csv',
   if assay_group:
     mask &= df['Assay Group'] == assay_group
   
+  hla_a2_mask = (mhc == 'HLA-A2') | mhc.str.startswith('HLA-A\*02')
+  print "HLA A-2 count:", hla_a2_mask.sum() 
+  if exclude_hla_a2:
+    mask &= ~hla_a2_mask
+    
+  if only_hla_a2:
+    mask &= hla_a2_mask
+    
   print "Filtered sequences epitope sequences", mask.sum()
   
   df = df[mask]
@@ -96,44 +106,6 @@ fns = [amino_acid.hydropathy,
        ]
 
 
-def peptide_sequences_to_histogram_vectors(peptides, extra_features = fns):
-  n = len(peptides)
-  X = np.zeros((n, 20 + len(fns))).astype('float')
-  for i, peptide in enumerate(peptides):
-    for letter in peptide:
-      X[i, letter_to_index(letter)] += 1
-    X[i, :] /= len(peptide)
-  for fn_idx, fn in enumerate(fns):
-    X[i, fn_idx] = np.mean([fn(aa) for aa in peptide])
-  print X
-  return X
-
-"""
-def load_dataset_old(filename = 'tcell_compact.csv', 
-                 assay_group=None, 
-                 unique_sequences = True, 
-                 filter_noisy_labels = True, 
-                 balance_classes = True):
-  imm, non = load_csv(filename, assay_group, unique_sequences, filter_noisy_labels)
-  X_imm = peptide_sequences_to_histogram_vectors(imm)
-  X_non = peptide_sequences_to_histogram_vectors(non)
-  print "IMM shape", X_imm.shape
-  print "NON shape", X_non.shape
-  if balance_classes:
-    n_imm = len(X_imm)
-    n_non = len(X_non)
-    if n_imm < n_non:
-      n_repeat = int(np.floor(n_non / float(n_imm)))
-      X_imms = [X_imm]  * n_repeat 
-      X_imm = np.vstack(X_imms)
-    else:
-      n_repeat = int(np.floor(n_imm / float(n_non)))
-      
-  X = np.vstack([X_imm, X_non])
-  Y = np.ones(len(X), dtype='bool')
-  Y[len(X_imm):] = 0
-  return X, Y
-"""
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import normalize
@@ -143,6 +115,8 @@ def load_dataset(filename = 'tcell_compact.csv',
                  filter_noisy_labels = True,
                  human = True, 
                  hla_type1 = True,
+                 exclude_hla_a2 = False, 
+                 only_hla_a2 = False, 
                  max_ngram = 1, 
 		         normalize_row = True, 
 		         reduced_alphabet = None):
@@ -151,7 +125,9 @@ def load_dataset(filename = 'tcell_compact.csv',
      unique_sequences, 
      filter_noisy_labels, 
      human, 
-     hla_type1)
+     hla_type1,
+     exclude_hla_a2, 
+     only_hla_a2)
   total = list(imm) + list(non)
   
   if reduced_alphabet is None:
@@ -168,10 +144,12 @@ def load_dataset(filename = 'tcell_compact.csv',
   
   # returns a sparse matrix 
   X = c.fit_transform(total).todense()
-  print "Alphabet", c.get_feature_names()
+  if reduced_alphabet:
+    print "Alphabet", c.get_feature_names()
   if normalize_row:
     X = normalize(X, norm='l1')
   Y = np.ones(len(total), dtype='bool')
   Y[len(imm):] = 0
+  print "Dataset size", X.shape
   return X, Y
   
