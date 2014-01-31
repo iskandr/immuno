@@ -9,8 +9,9 @@ def load_csv(filename = 'tcell_compact.csv',
              human = True, 
              hla_type1 = True,
              exclude_hla_a2 = False,
-             only_hla_a2 = False):
-  df = pd.read_csv(filename, skipinitialspace=True)
+             only_hla_a2 = False,
+             nrows = 5000):
+  df = pd.read_csv(filename, skipinitialspace=True, nrows = nrows)
   mhc = df['MHC Allele Name']
 
   # 

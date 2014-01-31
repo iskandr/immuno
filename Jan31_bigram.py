@@ -204,7 +204,7 @@ X_no_hla_a2_positive, Y_no_hla_a2_positive = iedb.load_dataset(
                  exclude_hla_a2 = True, 
                  only_hla_a2 = False,
                  max_ngram = max_ngram)
-eval_dataset.eval_cv(X_no_hla_a2_positive, X_no_hla_a2_positive)
+eval_dataset.eval_cv(X_no_hla_a2_positive, Y_no_hla_a2_positive)
 
 
 
@@ -258,7 +258,7 @@ X_hla_a2_positive, Y_hla_a2_positive = iedb.load_dataset(
                  exclude_hla_a2 = False, 
                  only_hla_a2 = True,
                  max_ngram = max_ngram)
-eval_dataset.eval_split(X_no_hla_a2_positive, X_no_hla_a2_positive, X_hla_a2_positive, Y_hla_a2_positive)
+eval_dataset.eval_split(X_no_hla_a2_positive, Y_no_hla_a2_positive, X_hla_a2_positive, Y_hla_a2_positive)
 
 
 
