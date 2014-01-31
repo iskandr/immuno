@@ -122,6 +122,8 @@ def load_dataset(filename = 'tcell_compact.csv',
                  max_ngram = 1, 
 		         normalize_row = True, 
 		         reduced_alphabet = None):
+  assert noisy_labels in ('drop', 'keep', 'positive', 'negative'), \
+    "Invalid option: %s" % noisy_labels
   drop_positive_noisy_labels = (noisy_labels == 'drop') or (noisy_labels == 'negative')
   drop_negative_noisy_labels = (noisy_labels == 'drop') or (noisy_labels == 'positive')
   
@@ -134,7 +136,9 @@ def load_dataset(filename = 'tcell_compact.csv',
      hla_type1,
      exclude_hla_a2, 
      only_hla_a2)
-  total = list(imm) + list(non)
+  
+  print "# IMM", len(imm)
+  print "# NON", len(non)
   
   if reduced_alphabet is None:
     preprocessor = None
@@ -148,6 +152,7 @@ def load_dataset(filename = 'tcell_compact.csv',
                       preprocessor = preprocessor)
   
   
+  total = list(imm) + list(non)
   # returns a sparse matrix 
   X = c.fit_transform(total).todense()
   if reduced_alphabet:
