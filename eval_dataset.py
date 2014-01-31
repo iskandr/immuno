@@ -25,6 +25,8 @@ def _eval_classifier(classifier_name, clf, X_train, Y_train, X_test, Y_test):
   acc = np.mean(Y_test == Y_pred)
   print classifier_name, "Accuracy", acc
   Y_prob = clf.predict_proba(X_test)
+  if len(Y_prob.shape) > 1:
+    Y_prob = Y_prob[:, -1]
   auc = sklearn.metrics.roc_auc_score(Y_test, Y_prob)
   print classifier_name, "AUC", auc
   return acc, auc 

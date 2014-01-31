@@ -4,7 +4,8 @@ import pandas as pd
 def load_csv(filename = 'tcell_compact.csv', 
              assay_group=None, 
              unique_sequences = True, 
-             filter_noisy_labels = True,
+             drop_positive_noisy_labels = True,
+             drop_negative_noisy_labels = True,
              human = True, 
              hla_type1 = True,
              exclude_hla_a2 = False,
@@ -33,7 +34,7 @@ def load_csv(filename = 'tcell_compact.csv',
   null_epitope_seq = df['Epitope Linear Sequence'].isnull()
   print "Dropping %d null sequences" % null_epitope_seq.sum()
   # if have rare or unknown amino acids, drop the sequence
-  bad_epitope_seq = df['Epitope Linear Sequence'].str.contains('u|x|U|X|J|B').astype('bool')
+  bad_epitope_seq = df['Epitope Linear Sequence'].str.contains('u|x|j|b|z|U|X|J|B|Z', na=False).astype('bool')
   print "Dropping %d bad sequences" % bad_epitope_seq.sum()
   has_epitope_seq = ~(bad_epitope_seq | null_epitope_seq)
   
@@ -45,7 +46,7 @@ def load_csv(filename = 'tcell_compact.csv',
   if assay_group:
     mask &= df['Assay Group'] == assay_group
   
-  hla_a2_mask = (mhc == 'HLA-A2') | mhc.str.startswith('HLA-A\*02')
+  hla_a2_mask = (mhc == 'HLA-A2') | mhc.str.startswith('HLA-A\*02', na=False)
   print "HLA A-2 count:", hla_a2_mask.sum() 
   if exclude_hla_a2:
     mask &= ~hla_a2_mask
@@ -61,7 +62,7 @@ def load_csv(filename = 'tcell_compact.csv',
   
   imm = df['Epitope Linear Sequence'][imm_mask]
   print "# immunogenic sequences", len(imm)
-  print "sequence length"
+  #print "sequence length"
   #print imm.str.len().describe()
   
   non_mask = df['Qualitative Measure'] == 'Negative'
@@ -77,17 +78,17 @@ def load_csv(filename = 'tcell_compact.csv',
   print "# overlap %d (%0.4f)" % (len(noisy_set), float(len(noisy_set)) / len(imm_set))
   
   if unique_sequences:
-    if filter_noisy_labels:
-      return imm_set.difference(noisy_set), non_set.difference(noisy_set)
-    else:
-      return imm_set, non_set 
+    if drop_negative_noisy_labels:
+      non_set = non_set.difference(noisy_set)
+    if drop_positive_noisy_labels:
+      imm_set = imm_set.difference(noisy_set)
+    return imm_set, non_set 
   else:
-    if filter_noisy_labels:
-      imm_pure = [seq for seq in imm if seq not in noisy_set]
-      non_pure = [seq for seq in non if seq not in noisy_set]
-      return imm_pure, non_pure
-    else:
-      return imm, non 
+    if drop_negative_noisy_labels:
+      non = [seq for seq in non if seq not in noisy_set]
+    if drop_positive_noisy_labels:
+      imm = [seq for seq in imm if seq not in noisy_set]
+    return imm, non 
   
 import numpy as np 
 import amino_acid
@@ -112,7 +113,8 @@ from sklearn.preprocessing import normalize
 def load_dataset(filename = 'tcell_compact.csv',
                  assay_group=None,
                  unique_sequences = True,
-                 filter_noisy_labels = True,
+                 # 'drop' | 'keep' | 'positive' | 'negative'
+                 noisy_labels = 'drop', 
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
@@ -120,10 +122,14 @@ def load_dataset(filename = 'tcell_compact.csv',
                  max_ngram = 1, 
 		         normalize_row = True, 
 		         reduced_alphabet = None):
+  drop_positive_noisy_labels = (noisy_labels == 'drop') or (noisy_labels == 'negative')
+  drop_negative_noisy_labels = (noisy_labels == 'drop') or (noisy_labels == 'positive')
+  
   imm, non = load_csv(filename, 
      assay_group, 
      unique_sequences, 
-     filter_noisy_labels, 
+     drop_positive_noisy_labels,
+     drop_negative_noisy_labels, 
      human, 
      hla_type1,
      exclude_hla_a2, 

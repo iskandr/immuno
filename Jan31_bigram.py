@@ -12,6 +12,8 @@ import iedb
 import reduced_alphabet 
 import eval_dataset
 
+max_ngram = 2
+
 # first try all species
 print "All species"
 X_all, Y_all = iedb.load_dataset(
@@ -19,7 +21,8 @@ X_all, Y_all = iedb.load_dataset(
                  human = False, 
                  hla_type1 = False,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_all, Y_all)
 
 
@@ -32,7 +35,8 @@ X_all_filter, Y_all_filter = iedb.load_dataset(
                  human = False, 
                  hla_type1 = False,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_all_filter, Y_all_filter)
 
 
@@ -45,7 +49,8 @@ X_all_positive, Y_all_positive = iedb.load_dataset(
                  human = False, 
                  hla_type1 = False,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                max_ngram = max_ngram)
 eval_dataset.eval_cv(X_all_positive, Y_all_positive)
 
 
@@ -58,7 +63,8 @@ X_all_negative, Y_all_negative = iedb.load_dataset(
                  human = False, 
                  hla_type1 = False,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_all_negative, Y_all_negative)
 
 print 
@@ -69,7 +75,8 @@ X_human, Y_human = iedb.load_dataset(
                  human = True, 
                  hla_type1 = False,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human, Y_human)
 
 
@@ -81,7 +88,8 @@ X_human_filter, Y_human_filter = iedb.load_dataset(
                  human = True, 
                  hla_type1 = False,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human_filter, Y_human_filter)
 
 
@@ -93,7 +101,8 @@ X_human_positive, Y_human_positive = iedb.load_dataset(
                  human = True, 
                  hla_type1 = False,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human_positive, Y_human_positive)
 
 
@@ -105,7 +114,8 @@ X_human_negative, Y_human_negative = iedb.load_dataset(
                  human = True, 
                  hla_type1 = False,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human_negative, Y_human_negative)
 
 print 
@@ -116,7 +126,8 @@ X_human_mhc1, Y_human_mhc1 = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human_mhc1, Y_human_mhc1)
 
 
@@ -128,7 +139,8 @@ X_human_mhc1_filter, Y_human_mhc1_filter = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human_mhc1_filter, Y_human_mhc1_filter)
 
 
@@ -140,7 +152,8 @@ X_human_mhc1_positive, Y_human_mhc1_positive = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human_mhc1_positive, Y_human_mhc1_positive)
 
 print 
@@ -151,7 +164,8 @@ X_human_mhc1_negative, Y_human_mhc1_negative = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human_mhc1_positive, Y_human_mhc1_positive)
 
 print 
@@ -162,7 +176,8 @@ X_no_hla_a2, Y_no_hla_a2 = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = True, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_no_hla_a2, Y_no_hla_a2)
 
 
@@ -174,7 +189,8 @@ X_no_hla_a2_filter, Y_no_hla_a2_filter = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = True, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_no_hla_a2_filter, Y_no_hla_a2_filter)
 
 
@@ -186,7 +202,8 @@ X_no_hla_a2_positive, Y_no_hla_a2_positive = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = True, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_no_hla_a2_positive, X_no_hla_a2_positive)
 
 
@@ -199,7 +216,8 @@ X_no_hla_a2_negtive, Y_no_hla_a2_negative = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = True, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
 eval_dataset.eval_cv(X_no_hla_a2_positive, Y_no_hla_a2_positive)
 
 
@@ -211,7 +229,8 @@ X_hla_a2, Y_hla_a2 = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = True)
+                 only_hla_a2 = True,
+                 max_ngram = max_ngram)
 eval_dataset.eval_split(X_no_hla_a2, Y_no_hla_a2, X_hla_a2, Y_hla_a2)
 
 
@@ -223,7 +242,8 @@ X_hla_a2_filtered, Y_hla_a2_filtered = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = True)
+                 only_hla_a2 = True,
+                 max_ngram = max_ngram)
 eval_dataset.eval_split(X_no_hla_a2_filter, Y_no_hla_a2_filter, X_hla_a2_filtered, Y_hla_a2_filtered)
 
 
@@ -236,7 +256,8 @@ X_hla_a2_positive, Y_hla_a2_positive = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = True)
+                 only_hla_a2 = True,
+                 max_ngram = max_ngram)
 eval_dataset.eval_split(X_no_hla_a2_positive, X_no_hla_a2_positive, X_hla_a2_positive, Y_hla_a2_positive)
 
 
@@ -250,12 +271,16 @@ X_no_hla_a2_cytotoxicity, Y_no_hla_a2_cytotoxicity = iedb.load_dataset(
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = True, 
-                 only_hla_a2 = False)
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
+                 
 X_hla_a2_cytotoxicity, Y_hla_a2_cytotoxicity = iedb.load_dataset(
                  noisy_labels = 'drop',
                  assay_group = 'cytotoxicity', 
                  human = True, 
                  hla_type1 = True,
                  exclude_hla_a2 = False, 
-                 only_hla_a2 = True)
+                 only_hla_a2 = True,
+                 max_ngram = max_ngram)
+                 
 eval_dataset.eval_split(X_no_hla_a2_cytotoxicity, Y_no_hla_a2_cytotoxicity, X_hla_a2_cytotoxicity, Y_hla_a2_cytotoxicity)
