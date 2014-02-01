@@ -4,13 +4,12 @@ import pandas as pd
 def load_csv(filename = 'tcell_compact.csv', 
              assay_group=None, 
              unique_sequences = True, 
-             drop_positive_noisy_labels = True,
-             drop_negative_noisy_labels = True,
+             noisy_labels = 'majority',
              human = True, 
              hla_type1 = True,
              exclude_hla_a2 = False,
              only_hla_a2 = False,
-             nrows = 5000):
+             nrows = None):
   df = pd.read_csv(filename, skipinitialspace=True, nrows = nrows)
   mhc = df['MHC Allele Name']
 
@@ -59,36 +58,40 @@ def load_csv(filename = 'tcell_compact.csv',
   
   df = df[mask]
   
-  imm_mask = df['Qualitative Measure'].str.startswith('Positive').astype('bool')
   
-  imm = df['Epitope Linear Sequence'][imm_mask]
+  epitopes = df['Epitope Linear Sequence'].str.upper()
+  
+  if noisy_labels == 'majority':
+    groups = imm_mask.groupby(ep)
+    imm_mask = groups.mean() >= 0.5
+  else:
+    imm_mask = df['Qualitative Measure'].str.startswith('Positive').astype('bool')
+
+  imm = epitopes[imm_mask]
   print "# immunogenic sequences", len(imm)
-  #print "sequence length"
-  #print imm.str.len().describe()
-  
-  non_mask = df['Qualitative Measure'] == 'Negative'
-  non = df['Epitope Linear Sequence'][non_mask]
+  non_mask = ~imm_mask
+  non = epitopes[non_mask]
   print "# non-immunogenic sequences", len(non)
-  #print "sequence length", non.str.len().describe()
+  
   
   imm_set = set(imm)
   non_set = set(non)
   noisy_set = imm_set.intersection(non_set)
   print "# unique IMM", len(imm_set)
   print "# unique NON", len(non_set)
-  print "# overlap %d (%0.4f)" % (len(noisy_set), float(len(noisy_set)) / len(imm_set))
-  
-  if unique_sequences:
-    if drop_negative_noisy_labels:
-      non_set = non_set.difference(noisy_set)
-    if drop_positive_noisy_labels:
+  print "# overlap %d (%0.4f)" % (len(noisy_set), \
+      float(len(noisy_set)) / len(imm_set))
+
+  if noisy_labels != 'majority':
+    if (noisy_labels == 'drop') or (noisy_labels == 'negative'):
       imm_set = imm_set.difference(noisy_set)
+    if (noisy_labels == 'drop') or (noisy_labels == 'positive'):
+      non_set = non_set.difference(noisy_set)
+  if unique_sequences:
     return imm_set, non_set 
   else:
-    if drop_negative_noisy_labels:
-      non = [seq for seq in non if seq not in noisy_set]
-    if drop_positive_noisy_labels:
-      imm = [seq for seq in imm if seq not in noisy_set]
+    imm = [epitope for epitope in imm if epitope not in imm_set]
+    non = [epitope for epitope in non if epitope not in non_set]
     return imm, non 
   
 import numpy as np 
@@ -123,16 +126,14 @@ def load_dataset(filename = 'tcell_compact.csv',
                  max_ngram = 1, 
 		         normalize_row = True, 
 		         reduced_alphabet = None):
-  assert noisy_labels in ('drop', 'keep', 'positive', 'negative'), \
+  assert noisy_labels in ('majority', 'drop', 'keep', 'positive', 'negative'), \
     "Invalid option: %s" % noisy_labels
-  drop_positive_noisy_labels = (noisy_labels == 'drop') or (noisy_labels == 'negative')
-  drop_negative_noisy_labels = (noisy_labels == 'drop') or (noisy_labels == 'positive')
+
   
   imm, non = load_csv(filename, 
      assay_group, 
      unique_sequences, 
-     drop_positive_noisy_labels,
-     drop_negative_noisy_labels, 
+     noisy_labels,
      human, 
      hla_type1,
      exclude_hla_a2, 

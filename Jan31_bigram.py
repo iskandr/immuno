@@ -13,7 +13,7 @@ import reduced_alphabet
 import eval_dataset
 
 max_ngram = 2
-
+"""
 # first try all species
 print "All species"
 X_all, Y_all = iedb.load_dataset(
@@ -117,7 +117,7 @@ X_human_negative, Y_human_negative = iedb.load_dataset(
                  only_hla_a2 = False,
                  max_ngram = max_ngram)
 eval_dataset.eval_cv(X_human_negative, Y_human_negative)
-
+"""
 print 
 print "---"
 print "Human MHC1"
@@ -276,6 +276,30 @@ X_no_hla_a2_cytotoxicity, Y_no_hla_a2_cytotoxicity = iedb.load_dataset(
                  
 X_hla_a2_cytotoxicity, Y_hla_a2_cytotoxicity = iedb.load_dataset(
                  noisy_labels = 'drop',
+                 assay_group = 'cytotoxicity', 
+                 human = True, 
+                 hla_type1 = True,
+                 exclude_hla_a2 = False, 
+                 only_hla_a2 = True,
+                 max_ngram = max_ngram)
+                 
+eval_dataset.eval_split(X_no_hla_a2_cytotoxicity, Y_no_hla_a2_cytotoxicity, X_hla_a2_cytotoxicity, Y_hla_a2_cytotoxicity)
+
+
+print 
+print "---"
+print "Cross-accuracy for HLA-A2 data (noisy = positive, assay_group = cytotoxity)"
+X_no_hla_a2_cytotoxicity, Y_no_hla_a2_cytotoxicity = iedb.load_dataset(
+                 noisy_labels = 'positive',
+                 assay_group = 'cytotoxicity', 
+                 human = True, 
+                 hla_type1 = True,
+                 exclude_hla_a2 = True, 
+                 only_hla_a2 = False,
+                 max_ngram = max_ngram)
+                 
+X_hla_a2_cytotoxicity, Y_hla_a2_cytotoxicity = iedb.load_dataset(
+                 noisy_labels = 'positive',
                  assay_group = 'cytotoxicity', 
                  human = True, 
                  hla_type1 = True,
