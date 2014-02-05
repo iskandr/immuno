@@ -6,7 +6,7 @@ import iedb
 import amino_acid 
 from amino_acid import peptide_to_indices
 
-CUTOFF = 5
+CUTOFF = 3
 SPARSE = False
 ASSAY = None #'cytotoxicity'
 LENGTH = 9
