@@ -12,6 +12,7 @@ def load_9mers(filename):
   result = [peptide_to_indices(line) for line in lines]
   return np.array(result)
 
+
 IMMA2_IMM_FILE = 'IMMA2_imm.txt'
 IMMA2_NON_FILE = 'IMMA2_non.txt'
 def load_dataset(imm_file, non_file):
@@ -25,7 +26,7 @@ def load_dataset(imm_file, non_file):
 def load_imma2():
   return load_dataset(IMMA2_IMM_FILE, IMMA2_NON_FILE)
   
-
+  
 IEDB_IMM_FILE = 'IEDB_TCELL_HUMAN_IMM.txt'
 IEDB_NON_FILE = 'IEDB_TCELL_HUMAN_NON.txt'
 

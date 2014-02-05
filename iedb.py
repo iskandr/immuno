@@ -9,6 +9,7 @@ def load_csv(filename = 'tcell_compact.csv',
              hla_type1 = True,
              exclude_hla_a2 = False,
              only_hla_a2 = False,
+             peptide_length = None, 
              nrows = None):
   df = pd.read_csv(filename, skipinitialspace=True, nrows = nrows)
   mhc = df['MHC Allele Name']
@@ -53,29 +54,38 @@ def load_csv(filename = 'tcell_compact.csv',
     
   if only_hla_a2:
     mask &= hla_a2_mask
+  
+  
+  epitopes = df['Epitope Linear Sequence'].str.upper()
+  
+  if peptide_length:
+    assert peptide_length > 0
+    mask &=  epitopes.str.len() == peptide_length 
     
   print "Filtered sequences epitope sequences", mask.sum()
   
   df = df[mask]
   
   
-  epitopes = df['Epitope Linear Sequence'].str.upper()
-  
-  if noisy_labels == 'majority':
-    groups = imm_mask.groupby(ep)
-    imm_mask = groups.mean() >= 0.5
-  else:
-    imm_mask = df['Qualitative Measure'].str.startswith('Positive').astype('bool')
+  imm_mask = df['Qualitative Measure'].str.startswith('Positive').astype('bool')
 
-  imm = epitopes[imm_mask]
-  print "# immunogenic sequences", len(imm)
-  non_mask = ~imm_mask
-  non = epitopes[non_mask]
-  print "# non-immunogenic sequences", len(non)
-  
+  if noisy_labels == 'majority':
+    groups = imm_mask.groupby(epitopes)
+    imm_mask = groups.mean() >= 0.5
+    non_mask = ~imm_mask
+    imm = imm_mask.index[imm_mask]
+    non = non_mask.index[non_mask] 
+  else:
+    non_mask = df['Qualitative Measure'] == 'Negative'
+    imm = epitopes[imm_mask]
+    non = epitopes[non_mask]
   
   imm_set = set(imm)
   non_set = set(non)
+  
+  print "# immunogenic sequences", len(imm)
+  print "# non-immunogenic sequences", len(non)
+  
   noisy_set = imm_set.intersection(non_set)
   print "# unique IMM", len(imm_set)
   print "# unique NON", len(non_set)

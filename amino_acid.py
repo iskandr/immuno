@@ -65,9 +65,13 @@ def get_idx(x):
     return letter_to_index(x)
 
 def transformation_from_table(table):
-  values = parse_table(table)
-  print values 
+  values = []
   def f(x):
+    if not values:
+      # parse lazily
+      actual_values = parse_table(table)
+      values.extend(actual_values)
+      print actual_values
     return values[get_idx(x)]
   return f
   
